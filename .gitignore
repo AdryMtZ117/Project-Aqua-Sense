@@ -1,0 +1,112 @@
+# ==============================================================================
+# AQÜA-SENSE / AQUA-SENSE — .gitignore Maestro
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. Compilación Hardware (Arduino / ESP32 / PlatformIO)
+# ------------------------------------------------------------------------------
+build/
+.pio/
+.pioenvs/
+.piolibdeps/
+*.hex
+*.bin
+*.elf
+*.eep
+*.srec
+*.lst
+*.map
+*.d
+*.ino.cpp
+*.ino.hex
+
+# ------------------------------------------------------------------------------
+# 2. Entornos y Credenciales Sensibles (Hotspots, WiFi, API Keys, Passwords)
+# ------------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+secrets.h
+**/secrets.h
+credentials.h
+**/credentials.h
+config.json
+config.local.json
+config.local.php
+conn.local.php
+secrets.json
+!*.example.*
+!*.example.h
+!*.example.php
+
+# Llaves privadas, firmas y certificados
+*.pem
+*.key
+*.cert
+*.crt
+*.pfx
+*.p12
+*.kdbx
+id_rsa*
+id_ed25519*
+
+# ------------------------------------------------------------------------------
+# 3. Bases de Datos Locales y Dumps
+# ------------------------------------------------------------------------------
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+*.sql.bak
+*.sql.gz
+
+# ------------------------------------------------------------------------------
+# 4. Logs del Sistema y Servidor
+# ------------------------------------------------------------------------------
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ------------------------------------------------------------------------------
+# 5. Dependencias y Paquetes Web (Node / PWA)
+# ------------------------------------------------------------------------------
+node_modules/
+dist/
+.npm/
+
+# ------------------------------------------------------------------------------
+# 6. Archivos de Entorno de Desarrollo (IDEs & Editores)
+# ------------------------------------------------------------------------------
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/settings.json.example
+.idea/
+*.sublime-workspace
+*.sublime-project
+*.swp
+*.swo
+*~
+
+# ------------------------------------------------------------------------------
+# 7. Sistema Operativo (Windows & macOS)
+# ------------------------------------------------------------------------------
+Thumbs.db
+ehthumbs.db
+desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# ------------------------------------------------------------------------------
+# 8. Docker Overrides y Archivos Temporales
+# ------------------------------------------------------------------------------
+docker-compose.override.yml
+*.tmp
+*.bak
+nada.txt.txt

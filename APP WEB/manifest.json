@@ -1,0 +1,21 @@
+{
+  "name": "AQÜA-SENSE",
+  "short_name": "AQÜA-SENSE",
+  "description": "Aplicación de monitoreo climático y de sensores",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#5A99E6",
+  "theme_color": "#4075C5",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

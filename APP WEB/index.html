@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AQÜA-SENSE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- PWA Setup -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#5A99E6">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand-name">AQÜA-SENSE</div>
+  <div class="topbar-right">
+    <button class="btn-datos" id="btn-perfil" onclick="abrirLogin()" style="font-size:1.2rem; padding: 2px 10px;">👤</button>
+    <button class="btn-datos" onclick="toggleDatos()">Sitios</button>
+  </div>
+</div>
+
+<!-- VISTA PRINCIPAL (CLIMA Y SENSORES) -->
+<div id="view-clima" class="view-content active">
+    
+    <div class="clima-hero">
+        <div id="ubicacion-actual" style="font-size: 1.2rem; font-weight: 500; margin-bottom: 2px; color: rgba(255,255,255,0.9);">Ubicando...</div>
+        <div id="btn-ubicacion" style="font-size: 0.85rem; color: rgba(255,255,255,0.6); margin-bottom: 10px; cursor: pointer; display: none;" onclick="solicitarPermisoUbicacion()">Activar servicios de ubicación &gt;</div>
+        <div class="clima-temp-main">
+            <span id="clima-temp">--</span><span class="unit">°</span>
+        </div>
+        <div class="clima-desc-main">
+            <span id="clima-desc">--</span> <span style="margin-left: 8px;" id="clima-maxmin"></span>
+        </div>
+        <div class="chip-ica">🍃 ICA 72</div>
+    </div>
+
+    <div class="page">
+        <!-- Tarjeta: Pronóstico 4 Días -->
+        <div class="card">
+            <div class="card-head">
+                <span class="card-head-title">📅 Pronóstico de 5 días</span>
+            </div>
+            <div id="pron-grid">
+                <!-- Se llenará con JS -->
+            </div>
+            <div style="margin-top: 15px; text-align: center;">
+                <button style="background: rgba(255,255,255,0.1); border:none; padding:10px 20px; border-radius:20px; color:white; font-family:var(--sans); width:100%;">Pronóstico de 5 días</button>
+            </div>
+        </div>
+
+        <!-- Tarjeta: Tendencia (Pronóstico 24 Horas adaptado) -->
+        <div class="card">
+            <div class="card-head">
+                <span class="card-head-title">📈 Tendencia Temperatura (24h)</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                <div style="font-size:1.2rem;">MIN <span id="t-min">--</span></div>
+                <div style="font-size:1.2rem;">PROM <span id="t-avg">--</span></div>
+                <div style="font-size:1.2rem;">MAX <span id="t-max">--</span></div>
+            </div>
+            <div class="tend-body">
+                <canvas id="tend-canvas" class="tend-canvas"></canvas>
+            </div>
+        </div>
+
+        <!-- Cuadrícula de Sensores Estilo Weather Widgets -->
+        <div class="sensores-grid">
+            <!-- Humedad -->
+            <div class="sensor-card">
+                <div class="sensor-card-title">Humedad</div>
+                <div class="ring-wrapper">
+                    <svg class="ring-container" viewBox="0 0 100 100">
+                        <circle class="ring-bg" cx="50" cy="50" r="40"></circle>
+                        <path class="ring-fg blue" d="M 50 10 A 40 40 0 0 1 90 50" id="ring-humedad"></path>
+                    </svg>
+                    <div class="ring-content">
+                        <div class="sensor-card-val"><span id="sv-humedad">--</span>%</div>
+                    </div>
+                </div>
+                <div class="sensor-card-sub">Ambiente</div>
+            </div>
+            <!-- Sensación Térmica -->
+            <div class="sensor-card">
+                <div class="sensor-card-title">Sensación Real</div>
+                <div class="ring-wrapper">
+                    <svg class="ring-container" viewBox="0 0 100 100">
+                        <circle class="ring-bg" cx="50" cy="50" r="40"></circle>
+                        <path class="ring-fg orange" d="M 50 10 A 40 40 0 0 1 90 50" id="ring-sensacion"></path>
+                    </svg>
+                    <div class="ring-content">
+                        <div class="sensor-card-val"><span id="sv-sensacion">--</span>°</div>
+                    </div>
+                </div>
+                <div class="sensor-card-sub">Actual</div>
+            </div>
+            <!-- Viento -->
+            <div class="sensor-card">
+                <div class="sensor-card-title">Viento</div>
+                <div class="ring-wrapper">
+                    <svg class="ring-container" viewBox="0 0 100 100">
+                        <circle class="ring-bg" cx="50" cy="50" r="40"></circle>
+                        <circle class="ring-fg green" cx="50" cy="50" r="40" stroke-dasharray="251.2" stroke-dashoffset="180" id="ring-viento"></circle>
+                    </svg>
+                    <div class="ring-content">
+                        <div class="sensor-card-val"><span id="sv-viento">--</span></div>
+                    </div>
+                </div>
+                <div class="sensor-card-sub">km/h</div>
+            </div>
+            <!-- Presión Atmosférica -->
+            <div class="sensor-card">
+                <div class="sensor-card-title">Presión</div>
+                <div class="ring-wrapper">
+                    <svg class="ring-container" viewBox="0 0 100 100">
+                        <circle class="ring-bg" cx="50" cy="50" r="40"></circle>
+                        <circle class="ring-fg blue" cx="50" cy="50" r="40" stroke-dasharray="251.2" stroke-dashoffset="100" id="ring-presion"></circle>
+                    </svg>
+                    <div class="ring-content">
+                        <div class="sensor-card-val" id="sv-presion">--</div>
+                    </div>
+                </div>
+                <div class="sensor-card-sub">mbar</div>
+            </div>
+        </div>
+        
+        <div style="text-align: center; color: var(--text-dim); font-size: 0.75rem; margin-top: 10px;">
+            Datos en parte proporcionados por <b>n8n y AQÜA-SENSE</b>
+        </div>
+    </div>
+</div>
+
+<!-- VISTA DATOS / SUCURSALES (OCULTA POR DEFECTO) -->
+<div id="view-datos" class="view-content">
+    <div class="page" style="padding-top:20px;">
+        <div class="card">
+            <div class="card-head">
+                <span class="card-head-title">🏠 MIS SITIOS</span>
+                <button onclick="toggleDatos()" style="background:none; border:none; color:var(--text-main); cursor:pointer;">Cerrar ✕</button>
+            </div>
+            <div id="lista-sucursales">
+                <!-- Cargará desde MySQL -->
+            </div>
+        </div>
+
+        <div id="detalle-sede" class="card" style="display:none;">
+            <div class="card-head">
+                <span class="card-head-title" id="nombre-sucursal-detalle">📍 DETALLE SEDE</span>
+                <button onclick="volverALista()" style="background:rgba(255,255,255,0.2); border:none; color:white; padding:5px 10px; border-radius:10px; cursor:pointer;">Volver</button>
+            </div>
+            <div id="cascada-contenido" class="cascada-container">
+                <!-- Cargará desde MySQL -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- FAB WHATSAPP AI CHAT -->
+<div class="fab-container">
+  <div class="fab-ai" onclick="abrirChat()">
+    <div class="fab-ai-icon">✨</div>
+  </div>
+</div>
+
+<!-- CHAT MODAL -->
+<div class="chat-overlay" id="chat-overlay" onclick="if(event.target===this) cerrarChat()">
+  <div class="chat-modal">
+    <div class="chat-header">
+      <div class="chat-header-title">✨ Aqua IA</div>
+      <!-- Toggle de modo de respuesta (Solo datos) -->
+      <label style="font-size:0.85rem; display:flex; align-items:center; gap:5px; margin-left:auto; margin-right:15px; cursor:pointer; color:#333; font-weight:500;">
+        <input type="checkbox" id="chat-modo-estricto">
+        Solo datos
+      </label>
+      <button onclick="cerrarChat()" style="background:none; border:none; color:#1a1a1a; font-size:24px; cursor:pointer;">✕</button>
+    </div>
+    
+    <!-- Sugerencias rápidas -->
+    <div style="padding: 10px; display: flex; gap: 8px; overflow-x: auto; background: #f0f0f0; border-bottom: 1px solid #ddd; white-space: nowrap;">
+      <button onclick="ponerMensaje('¿Cuál es la temperatura actual del estanque 1?')" style="background: white; border: 1px solid #ccc; border-radius: 12px; padding: 5px 10px; font-size: 0.8rem; cursor: pointer; color: #333; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">🌡️ Temp. Estanque 1</button>
+      <button onclick="ponerMensaje('¿Cuál es el pH del dispositivo 1 actual?')" style="background: white; border: 1px solid #ccc; border-radius: 12px; padding: 5px 10px; font-size: 0.8rem; cursor: pointer; color: #333; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">💧 pH Dispositivo 1</button>
+      <button onclick="ponerMensaje('Dime el estado general de los sensores')" style="background: white; border: 1px solid #ccc; border-radius: 12px; padding: 5px 10px; font-size: 0.8rem; cursor: pointer; color: #333; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">📊 Estado General</button>
+    </div>
+
+    <div class="chat-messages" id="chat-messages">
+        <div class="msg bot">hola, soy tu asistente IA, en que te puedo informar?</div>
+    </div>
+    <div class="chat-input-area">
+      <input type="text" id="chat-input" class="chat-input-box" placeholder="Mensaje..." onkeypress="if(event.key === 'Enter') enviarMsg()">
+      <button class="btn-send" onclick="enviarMsg()">➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="chat-overlay" id="login-overlay" onclick="if(event.target===this) cerrarLogin()">
+  <div class="chat-modal" style="border-radius: 24px; padding-bottom: 20px;">
+    <div class="chat-header" style="border-radius: 24px 24px 0 0;">
+      <div class="chat-header-title">👤 Perfil de Cliente</div>
+      <button onclick="cerrarLogin()" style="background:none; border:none; color:#1a1a1a; font-size:24px; cursor:pointer;">✕</button>
+    </div>
+    <div id="login-form" style="padding: 20px; display:flex; flex-direction:column; gap:15px;">
+        <p style="color:#666; font-size:0.9rem;">Accede con tus credenciales para sincronizar tus sensores.</p>
+        <input type="text" id="login-user" class="chat-input-box" style="border: 1px solid #ccc;" placeholder="Usuario (Ej: user123)">
+        <input type="password" id="login-pass" class="chat-input-box" style="border: 1px solid #ccc;" placeholder="Contraseña">
+        <div id="login-error" style="color:#e74c3c; font-size:0.85rem; display:none; font-weight:500;"></div>
+        <button class="btn-datos" style="background:#4A90E2; color:white; width:100%; padding:12px; font-size:1rem; border-radius:12px;" onclick="iniciarSesion()">Entrar</button>
+    </div>
+    <div id="login-info" style="padding: 20px; display:none; flex-direction:column; gap:15px; text-align:center;">
+        <div style="font-size:3rem;">👋</div>
+        <h3 id="login-client-name" style="color:#333;"></h3>
+        <p style="color:#666; font-size:0.9rem;">Sesión iniciada correctamente.</p>
+        <button class="btn-datos" style="background:#e74c3c; color:white; width:100%; padding:12px; font-size:1rem; border-radius:12px;" onclick="cerrarSesion()">Cerrar Sesión</button>
+    </div>
+  </div>
+</div>
+<!-- MODALES CRUD -->
+
+<!-- Modal Peces -->
+<div class="chat-overlay" id="modal-pez" onclick="if(event.target===this) cerrarModal('modal-pez')">
+  <div class="chat-modal" style="border-radius: 24px; padding-bottom: 20px;">
+    <div class="chat-header" style="border-radius: 24px 24px 0 0;">
+      <div class="chat-header-title" id="titulo-modal-pez">🐟 Añadir Pez</div>
+      <button onclick="cerrarModal('modal-pez')" style="background:none; border:none; color:#1a1a1a; font-size:24px; cursor:pointer;">✕</button>
+    </div>
+    <div style="padding: 20px; display:flex; flex-direction:column; gap:15px;">
+        <input type="hidden" id="crud-pez-estanque-old">
+        <input type="hidden" id="crud-pez-especie-old">
+        
+        <select id="crud-pez-estanque" class="chat-input-box" style="border: 1px solid #ccc;"></select>
+        <select id="crud-pez-especie" class="chat-input-box" style="border: 1px solid #ccc;"></select>
+        <select id="crud-pez-etapa" class="chat-input-box" style="border: 1px solid #ccc;"></select>
+        <input type="number" id="crud-pez-cantidad" class="chat-input-box" style="border: 1px solid #ccc;" placeholder="Cantidad de Peces">
+        <div style="color:#666; font-size:0.85rem; margin-bottom:-10px;">Fecha de Siembra</div>
+        <input type="date" id="crud-pez-fecha" class="chat-input-box" style="border: 1px solid #ccc;">
+        
+        <button class="btn-datos" style="background:#4A90E2; color:white; width:100%; padding:12px; font-size:1rem; border-radius:12px;" onclick="guardarPez()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Catálogo -->
+<div class="chat-overlay" id="modal-catalogo" onclick="if(event.target===this) cerrarModal('modal-catalogo')">
+  <div class="chat-modal" style="border-radius: 24px; padding-bottom: 20px;">
+    <div class="chat-header" style="border-radius: 24px 24px 0 0;">
+      <div class="chat-header-title" id="titulo-modal-catalogo">💊 Añadir Medicamento</div>
+      <button onclick="cerrarModal('modal-catalogo')" style="background:none; border:none; color:#1a1a1a; font-size:24px; cursor:pointer;">✕</button>
+    </div>
+    <div style="padding: 20px; display:flex; flex-direction:column; gap:15px;">
+        <input type="hidden" id="crud-cat-id">
+        <input type="text" id="crud-cat-nombre" class="chat-input-box" style="border: 1px solid #ccc;" placeholder="Nombre del Producto">
+        <input type="text" id="crud-cat-tipo" class="chat-input-box" style="border: 1px solid #ccc;" placeholder="Tipo (ej. Antibiótico)">
+        <input type="number" step="0.01" id="crud-cat-dosis" class="chat-input-box" style="border: 1px solid #ccc;" placeholder="Dosis mg/L">
+        
+        <button class="btn-datos" style="background:#4A90E2; color:white; width:100%; padding:12px; font-size:1rem; border-radius:12px;" onclick="guardarCatalogo()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Protocolo -->
+<div class="chat-overlay" id="modal-protocolo" onclick="if(event.target===this) cerrarModal('modal-protocolo')">
+  <div class="chat-modal" style="border-radius: 24px; padding-bottom: 20px;">
+    <div class="chat-header" style="border-radius: 24px 24px 0 0;">
+      <div class="chat-header-title" id="titulo-modal-protocolo">🛡️ Añadir Protocolo</div>
+      <button onclick="cerrarModal('modal-protocolo')" style="background:none; border:none; color:#1a1a1a; font-size:24px; cursor:pointer;">✕</button>
+    </div>
+    <div style="padding: 20px; display:flex; flex-direction:column; gap:15px;">
+        <input type="hidden" id="crud-prot-id">
+        <select id="crud-prot-especie" class="chat-input-box" style="border: 1px solid #ccc;"></select>
+        <select id="crud-prot-medicamento" class="chat-input-box" style="border: 1px solid #ccc;"></select>
+        <input type="number" id="crud-prot-frecuencia" class="chat-input-box" style="border: 1px solid #ccc;" placeholder="Frecuencia (días)">
+        <textarea id="crud-prot-notas" class="chat-input-box" style="border: 1px solid #ccc; resize:none; height:80px;" placeholder="Notas de aplicación..."></textarea>
+        
+        <button class="btn-datos" style="background:#4A90E2; color:white; width:100%; padding:12px; font-size:1rem; border-radius:12px;" onclick="guardarProtocolo()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Calendario -->
+<div class="chat-overlay" id="modal-calendario" onclick="if(event.target===this) cerrarModal('modal-calendario')">
+  <div class="chat-modal" style="border-radius: 24px; padding-bottom: 20px;">
+    <div class="chat-header" style="border-radius: 24px 24px 0 0;">
+      <div class="chat-header-title" id="titulo-modal-calendario">📅 Añadir Evento</div>
+      <button onclick="cerrarModal('modal-calendario')" style="background:none; border:none; color:#1a1a1a; font-size:24px; cursor:pointer;">✕</button>
+    </div>
+    <div style="padding: 20px; display:flex; flex-direction:column; gap:15px;">
+        <input type="hidden" id="crud-cal-id">
+        <select id="crud-cal-estanque" class="chat-input-box" style="border: 1px solid #ccc;"></select>
+        <select id="crud-cal-medicamento" class="chat-input-box" style="border: 1px solid #ccc;"></select>
+        <div style="color:#666; font-size:0.85rem; margin-bottom:-10px;">Fecha Programada</div>
+        <input type="date" id="crud-cal-fecha-prog" class="chat-input-box" style="border: 1px solid #ccc;">
+        <select id="crud-cal-estado" class="chat-input-box" style="border: 1px solid #ccc;">
+            <option value="Pendiente">Pendiente</option>
+            <option value="Completado">Completado</option>
+            <option value="Atrasado">Atrasado</option>
+        </select>
+        <div style="color:#666; font-size:0.85rem; margin-bottom:-10px;">Fecha Aplicación Real (Opcional)</div>
+        <input type="date" id="crud-cal-fecha-real" class="chat-input-box" style="border: 1px solid #ccc;">
+        <input type="number" step="0.01" id="crud-cal-dosis" class="chat-input-box" style="border: 1px solid #ccc;" placeholder="Dosis Total Aplicada (mg)">
+        
+        <button class="btn-datos" style="background:#4A90E2; color:white; width:100%; padding:12px; font-size:1rem; border-radius:12px;" onclick="guardarCalendario()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js?v=2.1"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js?v=2.1').then(registration => {
+        registration.update();
+        console.log('ServiceWorker registrado con éxito: ', registration.scope);
+      }).catch(err => {
+        console.log('Fallo en el registro del ServiceWorker: ', err);
+      });
+    });
+  }
+</script>
+</body>
+</html>
